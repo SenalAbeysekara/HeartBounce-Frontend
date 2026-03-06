@@ -14,7 +14,7 @@ export default function MainMenu() {
   useEffect(() => {
     async function loadMe() {
       try {
-        const res = await api.get("/auth/me");
+        const res = await api.get("/users/me");
         setUser(res.data.user);
       } catch (err) {
         navigate("/login");
@@ -25,7 +25,7 @@ export default function MainMenu() {
 
   async function handleLogout() {
     try {
-      await api.post("/auth/logout", {});
+      await api.post("/users/logout", {});
     } finally {
       navigate("/login");
     }

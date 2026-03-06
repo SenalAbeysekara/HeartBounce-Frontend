@@ -20,7 +20,7 @@ export default function PlayerProfile() {
   useEffect(() => {
     (async () => {
       try {
-        const meRes = await api.get("/auth/me");
+        const meRes = await api.get("/users/me");
         setUser(meRes.data.user);
         setNewName(meRes.data.user.userName || "");
 
@@ -79,7 +79,7 @@ export default function PlayerProfile() {
     setMsg("");
     setSaving(true);
     try {
-      const res = await api.put("/auth/username", { userName: newName });
+      const res = await api.put("/users/username", { userName: newName });
       setUser(res.data.user);
       setMsg("Username updated!");
       setEditing(false);

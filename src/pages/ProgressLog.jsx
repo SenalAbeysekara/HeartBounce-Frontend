@@ -11,7 +11,7 @@ export default function ProgressLog() {
   useEffect(() => {
     (async () => {
       try {
-        await api.get("/auth/me"); // protect page
+        await api.get("/users/me"); // protect page
         const res = await api.get("/game/runs/me");
         setRuns(res.data.runs || []);
       } catch {
