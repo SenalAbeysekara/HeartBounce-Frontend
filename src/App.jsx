@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import MainMenu from "./pages/MainMenu";
-import HeartBounceGame from "./pages/HeartBounceGame";
+import HeartBounceGame from "./pages/game/HeartBounceGame";
 import GameModeSelect from "./pages/GameModeSelect";
 import ProgressLog from "./pages/ProgressLog";
 import Leaderboard from "./pages/Leaderboard";

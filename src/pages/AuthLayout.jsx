@@ -1,15 +1,18 @@
 // AuthLayout.jsx
+
+// This layout wraps authentication pages like login or signup.
+// It creates the full-screen background design and shows the page content in the center.
 export default function AuthLayout({ children }) {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#060815] text-white">
-      {/* Background blobs (blurred) */}
+      {/* Blurred glowing circles used as decorative background effects */}
       <div className="pointer-events-none absolute -left-40 -top-40 h-96 w-130 rounded-full bg-purple-600/30 blur-3xl" />
       <div className="pointer-events-none absolute left-1/5 top-1/10 h-96 w-130 rounded-full bg-indigo-500/20 blur-3xl" />
       <div className="pointer-events-none absolute -right-56 top-28 h-96 w-130 rounded-full bg-cyan-400/20 blur-3xl" />
       <div className="pointer-events-none absolute right-1/6 -bottom-64 h-160 w-160 rounded-full bg-indigo-500/25 blur-3xl" />
       <div className="pointer-events-none absolute left-1/2 top-1/5 h-96 w-130 rounded-full bg-fuchsia-500/15 blur-3xl" />
 
-      {/* Grid overlay */}
+      {/* Light grid pattern placed on top of the background for extra visual style */}
       <div
         className="pointer-events-none absolute inset-0 opacity-40"
         style={{
@@ -19,10 +22,10 @@ export default function AuthLayout({ children }) {
         }}
       />
 
-      {/* vignette */}
+      {/* Dark radial overlay that makes the edges darker and the center more focused */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0)_35%,rgba(0,0,0,0.65)_100%)]" />
 
-      {/* Center */}
+      {/* Main content area that centers the child components on the screen */}
       <div className="relative z-10 flex min-h-screen items-center justify-center px-6">
         {children}
       </div>

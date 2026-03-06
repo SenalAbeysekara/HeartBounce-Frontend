@@ -1,129 +1,92 @@
+// Imports React hooks used for state, references, and side effects.
 import { useEffect, useRef, useState } from "react";
+
+// Imports axios for backend API requests.
 import axios from "axios";
-import AuthLayout from "./AuthLayout";
+
+// Imports the shared page layout.
+import AuthLayout from "../AuthLayout";
+
+// Imports routing tools.
 import { Link, useLocation } from "react-router-dom";
 
-const W = 1350;
-const H = 468;
+// Imports fixed game values from the constants file.
+import {
+  W,
+  H,
+  GROUND_Y,
+  GRAVITY,
+  JUMP_V,
+  BASE_SPEED,
+  BALL_SIZE,
+  STONE_MIN_H,
+  STONE_MAX_H,
+  STAR_SCORE,
+  OBSTACLE_SPACING_MIN,
+  OBSTACLE_SPACING_MAX,
+} from "./gameConstants";
 
-const GROUND_Y = 460;
-const GRAVITY = 2100;
-const JUMP_V = -1060;
+// Imports collision helpers.
+import { clamp, circleRect } from "./collision";
 
-const BASE_SPEED = 420;
-const BALL_SIZE = 42;
+// Imports drawing and image-loading helpers.
+import { loadImage, drawScrollingBg, drawStars } from "./drawHelpers";
 
-const STONE_COUNT = 8;
-const STONE_MIN_H = 160;
-const STONE_MAX_H = 220;
+// Imports helper functions for random values and world creation.
+import { randBetween, makeObstacles, makeStars } from "./gameHelpers";
 
-const STAR_COUNT = 10;
-const STAR_SIZE = 58;
-const STAR_SCORE = 50;
-
-const OBSTACLE_SPACING_MIN = 520;
-const OBSTACLE_SPACING_MAX = 760;
-
-const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
-const randBetween = (a, b) => a + Math.random() * (b - a);
-
-function circleRect(cx, cy, r, rx, ry, rw, rh) {
-  const px = clamp(cx, rx, rx + rw);
-  const py = clamp(cy, ry, ry + rh);
-  const dx = cx - px;
-  const dy = cy - py;
-  return dx * dx + dy * dy <= r * r;
-}
-
-function loadImage(src) {
-  return new Promise((res, rej) => {
-    const img = new Image();
-    img.src = src;
-    img.onload = () => res(img);
-    img.onerror = rej;
-  });
-}
-
-function drawScrollingBg(ctx, img, scrollX) {
-  const scale = Math.max(W / img.width, H / img.height);
-  const sw = img.width * scale;
-  const sh = img.height * scale;
-  const offset = -(scrollX % sw);
-
-  for (let x = offset; x < W + sw; x += sw) {
-    ctx.drawImage(img, x, (H - sh) / 2, sw, sh);
-  }
-}
-
-function createObstacle(x, img) {
-  const ratio = img?.height ? img.width / img.height : 1.4;
-  const h = Math.floor(randBetween(STONE_MIN_H, STONE_MAX_H));
-  const w = Math.floor(clamp(h * ratio * 1.25, 180, 320));
-  return { x, w, h, groundSink: 27 };
-}
-
-function makeObstacles(img) {
-  let x = 950;
-  const arr = [];
-
-  for (let i = 0; i < STONE_COUNT; i++) {
-    x += randBetween(OBSTACLE_SPACING_MIN, OBSTACLE_SPACING_MAX);
-    arr.push(createObstacle(x, img));
-  }
-
-  return arr;
-}
-
-function makeStars() {
-  let x = 850;
-  const stars = [];
-
-  for (let i = 0; i < STAR_COUNT; i++) {
-    x += 320 + Math.random() * 320;
-
-    stars.push({
-      x,
-      y: randBetween(130, 330),
-      size: STAR_SIZE,
-      taken: false,
-      bob: Math.random() * Math.PI * 2,
-    });
-  }
-
-  return stars;
-}
-
-export default function BasketMazeCanvasGame() {
+// Main HeartBounce game page.
+export default function HeartBounceGame() {
+  // Gets the data passed from the previous route.
   const location = useLocation();
 
+  // Reads selected difficulty and speed.
+  // If nothing was passed, default values are used.
   const difficulty = location.state?.difficulty ?? "medium";
   const speedMult = location.state?.speedMult ?? 1;
+
+  // Reads background and obstacle theme.
+  // If nothing was passed, default images are used.
   const theme = location.state ?? {
     bg: "/sprites/bg2.jpg",
     obstacle: "/sprites/obstacle2.png",
   };
+
+  // Calculates final running speed using the selected multiplier.
   const RUN_SPEED = BASE_SPEED * speedMult;
 
+  // References used for canvas animation and keyboard state.
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const lastTRef = useRef(performance.now());
   const keysRef = useRef({ jump: false });
 
+  // Stores loaded images and game values that change often.
+  // Refs are used so they can change without forcing re-render.
   const spritesRef = useRef(null);
   const scoreRef = useRef(0);
   const invincibleRef = useRef(0);
   const savedRef = useRef(false);
   const hitObstacleIndexRef = useRef(null);
 
+  // Stores the current game state.
   const [status, setStatus] = useState("PLAY");
+
+  // Stores the visible score.
   const [score, setScore] = useState(0);
+
+  // Tells whether the image assets are ready.
   const [loaded, setLoaded] = useState(false);
+
+  // Number of revives left in this run.
   const [revivesLeft, setRevivesLeft] = useState(3);
 
+  // Revive challenge data.
   const [puzzle, setPuzzle] = useState(null);
   const [answer, setAnswer] = useState("");
   const [puzzleAttemptsLeft, setPuzzleAttemptsLeft] = useState(3);
 
+  // Stores the whole game world.
   const worldRef = useRef({
     scrollX: 0,
     time: 0,
@@ -140,10 +103,12 @@ export default function BasketMazeCanvasGame() {
     stars: makeStars(),
   });
 
+  // Keeps the score ref synced with the latest score state.
   useEffect(() => {
     scoreRef.current = score;
   }, [score]);
 
+  // Resets the game back to its starting state.
   function resetGame() {
     setStatus("PLAY");
     setScore(0);
@@ -177,6 +142,8 @@ export default function BasketMazeCanvasGame() {
     lastTRef.current = performance.now();
   }
 
+  // Saves the finished run to the backend.
+  // It only saves once per run.
   async function saveRun(finalScore) {
     if (savedRef.current) return;
     savedRef.current = true;
@@ -190,6 +157,7 @@ export default function BasketMazeCanvasGame() {
     } catch {}
   }
 
+  // Requests a new revive puzzle from the backend.
   async function fetchHeart() {
     try {
       const res = await axios.get(
@@ -206,11 +174,13 @@ export default function BasketMazeCanvasGame() {
     }
   }
 
+  // Ends the game and saves the score.
   function endGame() {
     saveRun(scoreRef.current);
     setStatus("GAME_OVER");
   }
 
+  // Moves the obstacle that caused the hit further away after a successful revive.
   function moveHitObstacleForward() {
     const idx = hitObstacleIndexRef.current;
     const obs = worldRef.current.obstacles;
@@ -222,6 +192,7 @@ export default function BasketMazeCanvasGame() {
     hitObstacleIndexRef.current = null;
   }
 
+  // Checks the answer given in the revive popup.
   function handleHeartSubmit() {
     if (!puzzle) return;
 
@@ -237,9 +208,11 @@ export default function BasketMazeCanvasGame() {
 
     const left = puzzleAttemptsLeft - 1;
     setPuzzleAttemptsLeft(left);
+
     if (left <= 0) endGame();
   }
 
+  // Loads background, player, obstacle, and star images.
   useEffect(() => {
     let dead = false;
     setLoaded(false);
@@ -256,13 +229,15 @@ export default function BasketMazeCanvasGame() {
 
       spritesRef.current = { bg, ball, obstacle, star };
       worldRef.current.obstacles = makeObstacles(obstacle);
-
       setLoaded(true);
     })();
 
-    return () => (dead = true);
+    return () => {
+      dead = true;
+    };
   }, [theme.bg, theme.obstacle]);
 
+  // Handles jump and restart keyboard controls.
   useEffect(() => {
     const down = (e) => {
       if (e.code === "Space" || e.key === "ArrowUp") {
@@ -270,7 +245,9 @@ export default function BasketMazeCanvasGame() {
         e.preventDefault();
       }
 
-      if (status === "GAME_OVER" && e.key === "Enter") resetGame();
+      if (status === "GAME_OVER" && e.key === "Enter") {
+        resetGame();
+      }
     };
 
     const up = (e) => {
@@ -289,11 +266,16 @@ export default function BasketMazeCanvasGame() {
     };
   }, [status]);
 
+  // Main game loop.
+  // This controls movement, collision, score updates, and drawing.
   useEffect(() => {
+    if (!loaded || !spritesRef.current) return;
+
     const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
     canvas.width = W;
     canvas.height = H;
-    const ctx = canvas.getContext("2d");
 
     const step = (now) => {
       const w = worldRef.current;
@@ -309,26 +291,31 @@ export default function BasketMazeCanvasGame() {
         const p = w.player;
         p.rot += dt * 10;
 
+        // Makes the player jump only when on the ground.
         if (keysRef.current.jump && p.onGround) {
           p.vy = JUMP_V;
           p.onGround = false;
         }
 
+        // Applies gravity and vertical movement.
         p.vy += GRAVITY * dt;
         p.y += p.vy * dt;
 
+        // Stops the player on the ground.
         if (p.y + p.h >= GROUND_Y) {
           p.y = GROUND_Y - p.h;
           p.vy = 0;
           p.onGround = true;
         }
 
+        // Calculates player circle hitbox in world coordinates.
         const ballCx = p.x + w.scrollX + p.w / 2;
         const ballCy = p.y + p.h / 2;
         const ballR = (p.w / 2) * 0.74;
 
         const s = spritesRef.current;
 
+        // Checks collision with obstacles when shield is not active.
         if (invincibleRef.current <= 0) {
           for (let i = 0; i < w.obstacles.length; i++) {
             const ob = w.obstacles[i];
@@ -343,6 +330,7 @@ export default function BasketMazeCanvasGame() {
             const hbW = ob.w - padX * 2;
             const hbH = ob.h - padTop - padBottom;
 
+            // Skips collision if the player is clearly above the obstacle hitbox.
             if (ballCy + ballR < hbY + 8) continue;
 
             if (circleRect(ballCx, ballCy, ballR, hbX, hbY, hbW, hbH)) {
@@ -360,6 +348,7 @@ export default function BasketMazeCanvasGame() {
           }
         }
 
+        // Checks collision with stars and adds score.
         for (const st of w.stars) {
           if (st.taken) continue;
 
@@ -370,32 +359,31 @@ export default function BasketMazeCanvasGame() {
           if (dx * dx + dy * dy <= rr * rr) {
             st.taken = true;
 
-            setScore((s) => {
-              const ns = s + STAR_SCORE;
-              scoreRef.current = ns;
-              return ns;
+            setScore((current) => {
+              const nextScore = current + STAR_SCORE;
+              scoreRef.current = nextScore;
+              return nextScore;
             });
           }
         }
 
+        // Recycles obstacles that go out of view.
         for (const ob of w.obstacles) {
           if (ob.x - w.scrollX < -620) {
-            const farthestX = Math.max(...w.obstacles.map((x) => x.x));
+            const farthestX = Math.max(...w.obstacles.map((item) => item.x));
             const ratio = s.obstacle.width / s.obstacle.height;
 
-            ob.x =
-              farthestX +
-              randBetween(OBSTACLE_SPACING_MIN, OBSTACLE_SPACING_MAX);
-
+            ob.x = farthestX + randBetween(OBSTACLE_SPACING_MIN, OBSTACLE_SPACING_MAX);
             ob.h = Math.floor(randBetween(STONE_MIN_H, STONE_MAX_H));
             ob.w = Math.floor(clamp(ob.h * ratio * 1.25, 180, 320));
             ob.groundSink = 27;
           }
         }
 
+        // Recycles stars that were taken or moved out of view.
         for (const st of w.stars) {
           if (st.taken || st.x - w.scrollX < -420) {
-            const farthest = Math.max(...w.stars.map((x) => x.x));
+            const farthest = Math.max(...w.stars.map((item) => item.x));
 
             st.x = farthest + 420 + Math.random() * 420;
             st.y = randBetween(130, 330);
@@ -405,33 +393,25 @@ export default function BasketMazeCanvasGame() {
         }
       }
 
+      // Clears the canvas before drawing the next frame.
       ctx.clearRect(0, 0, W, H);
 
       const s = spritesRef.current;
 
+      // Draws the scrolling background.
       drawScrollingBg(ctx, s.bg, w.scrollX * 0.55);
 
-      for (const st of w.stars) {
-        if (st.taken) continue;
+      // Draws the stars and their glow effect.
+      drawStars(ctx, w.stars, w.scrollX, w.time, s.star);
 
-        const sx = st.x - w.scrollX;
-        const bobY = Math.sin(w.time * 3 + st.bob) * 6;
-
-        ctx.drawImage(
-          s.star,
-          sx - st.size / 2,
-          st.y + bobY - st.size / 2,
-          st.size,
-          st.size
-        );
-      }
-
+      // Draws all obstacles.
       for (const ob of w.obstacles) {
         const sx = ob.x - w.scrollX;
         const drawY = GROUND_Y - ob.h + ob.groundSink;
         ctx.drawImage(s.obstacle, sx, drawY, ob.w, ob.h);
       }
 
+      // Draws the rotating player.
       const p = w.player;
 
       ctx.save();
@@ -440,6 +420,7 @@ export default function BasketMazeCanvasGame() {
       ctx.drawImage(s.ball, -p.w / 2, -p.h / 2, p.w, p.h);
       ctx.restore();
 
+      // Draws the score and revive information.
       ctx.fillStyle = "rgba(0,0,0,0.55)";
       ctx.fillRect(18, 18, 360, 52);
 
@@ -448,6 +429,7 @@ export default function BasketMazeCanvasGame() {
       ctx.fillText(`Score: ${Math.floor(scoreRef.current)}`, 34, 50);
       ctx.fillText(`Revives: ${revivesLeft}`, 190, 50);
 
+      // Draws the game over overlay.
       if (status === "GAME_OVER") {
         ctx.fillStyle = "rgba(0,0,0,0.55)";
         ctx.fillRect(0, 0, W, H);
@@ -464,12 +446,16 @@ export default function BasketMazeCanvasGame() {
     };
 
     rafRef.current = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(rafRef.current);
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, [status, loaded, RUN_SPEED, difficulty, revivesLeft]);
 
   return (
     <AuthLayout>
       <div className="w-full">
+        {/* Top bar above the game canvas */}
         <div className="mb-3 flex items-center justify-between px-1">
           <div className="text-white/70 text-sm">
             <b>Only The Fastest Survive</b>
@@ -483,12 +469,14 @@ export default function BasketMazeCanvasGame() {
           </Link>
         </div>
 
+        {/* Main canvas where the game is drawn */}
         <canvas
           ref={canvasRef}
           className="block w-full border border-white/10 shadow-2xl"
           style={{ height: "auto", borderRadius: 18 }}
         />
 
+        {/* Revive popup shown after hitting an obstacle */}
         {status === "HEART" && puzzle && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/70">
             <div className="bg-[#0b1027] p-6 rounded-2xl text-center">
@@ -525,6 +513,6 @@ export default function BasketMazeCanvasGame() {
           </div>
         )}
       </div>
-    </AuthLayout>  
+    </AuthLayout>
   );
 }
