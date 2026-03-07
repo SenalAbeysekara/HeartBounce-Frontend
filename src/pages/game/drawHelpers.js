@@ -1,6 +1,6 @@
 import { W, H } from "./gameConstants";
 
-// Loads an image and returns it after the file is ready.
+// Loads an image and resolves once it is ready
 export function loadImage(src) {
   return new Promise((res, rej) => {
     const img = new Image();
@@ -10,7 +10,6 @@ export function loadImage(src) {
   });
 }
 
-// Draws a repeating background that scrolls as the game moves forward.
 export function drawScrollingBg(ctx, img, scrollX) {
   const scale = Math.max(W / img.width, H / img.height);
   const sw = img.width * scale;

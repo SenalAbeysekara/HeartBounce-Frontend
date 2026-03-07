@@ -1,16 +1,7 @@
-// Imports React hooks used for state, references, and side effects.
 import { useEffect, useRef, useState } from "react";
-
-// Imports axios for backend API requests.
 import axios from "axios";
-
-// Imports the shared page layout.
 import AuthLayout from "../AuthLayout";
-
-// Imports routing tools.
 import { Link, useLocation } from "react-router-dom";
-
-// Imports fixed game values from the constants file.
 import {
   W,
   H,
@@ -25,68 +16,42 @@ import {
   OBSTACLE_SPACING_MIN,
   OBSTACLE_SPACING_MAX,
 } from "./gameConstants";
-
-// Imports collision helpers.
 import { clamp, circleRect } from "./collision";
-
-// Imports drawing and image-loading helpers.
 import { loadImage, drawScrollingBg, drawStars } from "./drawHelpers";
-
-// Imports helper functions for random values and world creation.
 import { randBetween, makeObstacles, makeStars } from "./gameHelpers";
 
-// Main HeartBounce game page.
 export default function HeartBounceGame() {
-  // Gets the data passed from the previous route.
   const location = useLocation();
 
-  // Reads selected difficulty and speed.
-  // If nothing was passed, default values are used.
   const difficulty = location.state?.difficulty ?? "medium";
   const speedMult = location.state?.speedMult ?? 1;
 
-  // Reads background and obstacle theme.
-  // If nothing was passed, default images are used.
   const theme = location.state ?? {
     bg: "/sprites/bg2.jpg",
     obstacle: "/sprites/obstacle2.png",
   };
 
-  // Calculates final running speed using the selected multiplier.
   const RUN_SPEED = BASE_SPEED * speedMult;
 
-  // References used for canvas animation and keyboard state.
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const lastTRef = useRef(performance.now());
   const keysRef = useRef({ jump: false });
 
-  // Stores loaded images and game values that change often.
-  // Refs are used so they can change without forcing re-render.
   const spritesRef = useRef(null);
   const scoreRef = useRef(0);
   const invincibleRef = useRef(0);
   const savedRef = useRef(false);
   const hitObstacleIndexRef = useRef(null);
 
-  // Stores the current game state.
   const [status, setStatus] = useState("PLAY");
-
-  // Stores the visible score.
   const [score, setScore] = useState(0);
-
-  // Tells whether the image assets are ready.
   const [loaded, setLoaded] = useState(false);
-
-  // Number of revives left in this run.
   const [revivesLeft, setRevivesLeft] = useState(3);
-
-  // Revive challenge data.
   const [puzzle, setPuzzle] = useState(null);
   const [answer, setAnswer] = useState("");
   const [puzzleAttemptsLeft, setPuzzleAttemptsLeft] = useState(3);
 
-  // Stores the whole game world.
   const worldRef = useRef({
     scrollX: 0,
     time: 0,
@@ -103,12 +68,11 @@ export default function HeartBounceGame() {
     stars: makeStars(),
   });
 
-  // Keeps the score ref synced with the latest score state.
   useEffect(() => {
     scoreRef.current = score;
   }, [score]);
 
-  // Resets the game back to its starting state.
+  // Resets the whole run state
   function resetGame() {
     setStatus("PLAY");
     setScore(0);
@@ -142,26 +106,24 @@ export default function HeartBounceGame() {
     lastTRef.current = performance.now();
   }
 
-  // Saves the finished run to the backend.
-  // It only saves once per run.
+  // Saves the finished run only once
   async function saveRun(finalScore) {
     if (savedRef.current) return;
     savedRef.current = true;
 
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/game/runs`,
+        `${import.meta.env.VITE_API_URL}/api/run/runs`,
         { score: Number(finalScore) || 0, difficulty },
         { withCredentials: true }
       );
     } catch {}
   }
 
-  // Requests a new revive puzzle from the backend.
   async function fetchHeart() {
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/game/heart/new`,
+        `${import.meta.env.VITE_API_URL}/api/run/heart/new`,
         { withCredentials: true }
       );
 
@@ -174,13 +136,11 @@ export default function HeartBounceGame() {
     }
   }
 
-  // Ends the game and saves the score.
   function endGame() {
     saveRun(scoreRef.current);
     setStatus("GAME_OVER");
   }
 
-  // Moves the obstacle that caused the hit further away after a successful revive.
   function moveHitObstacleForward() {
     const idx = hitObstacleIndexRef.current;
     const obs = worldRef.current.obstacles;
@@ -192,7 +152,7 @@ export default function HeartBounceGame() {
     hitObstacleIndexRef.current = null;
   }
 
-  // Checks the answer given in the revive popup.
+  // Checks revive puzzle answer
   function handleHeartSubmit() {
     if (!puzzle) return;
 
@@ -212,7 +172,7 @@ export default function HeartBounceGame() {
     if (left <= 0) endGame();
   }
 
-  // Loads background, player, obstacle, and star images.
+  // Loads game images for the selected theme
   useEffect(() => {
     let dead = false;
     setLoaded(false);
@@ -237,7 +197,7 @@ export default function HeartBounceGame() {
     };
   }, [theme.bg, theme.obstacle]);
 
-  // Handles jump and restart keyboard controls.
+  // Keyboard controls for jump and restart
   useEffect(() => {
     const down = (e) => {
       if (e.code === "Space" || e.key === "ArrowUp") {
@@ -266,8 +226,7 @@ export default function HeartBounceGame() {
     };
   }, [status]);
 
-  // Main game loop.
-  // This controls movement, collision, score updates, and drawing.
+  // Main game loop
   useEffect(() => {
     if (!loaded || !spritesRef.current) return;
 
@@ -291,31 +250,26 @@ export default function HeartBounceGame() {
         const p = w.player;
         p.rot += dt * 10;
 
-        // Makes the player jump only when on the ground.
         if (keysRef.current.jump && p.onGround) {
           p.vy = JUMP_V;
           p.onGround = false;
         }
 
-        // Applies gravity and vertical movement.
         p.vy += GRAVITY * dt;
         p.y += p.vy * dt;
 
-        // Stops the player on the ground.
         if (p.y + p.h >= GROUND_Y) {
           p.y = GROUND_Y - p.h;
           p.vy = 0;
           p.onGround = true;
         }
 
-        // Calculates player circle hitbox in world coordinates.
         const ballCx = p.x + w.scrollX + p.w / 2;
         const ballCy = p.y + p.h / 2;
         const ballR = (p.w / 2) * 0.74;
 
         const s = spritesRef.current;
 
-        // Checks collision with obstacles when shield is not active.
         if (invincibleRef.current <= 0) {
           for (let i = 0; i < w.obstacles.length; i++) {
             const ob = w.obstacles[i];
@@ -330,7 +284,6 @@ export default function HeartBounceGame() {
             const hbW = ob.w - padX * 2;
             const hbH = ob.h - padTop - padBottom;
 
-            // Skips collision if the player is clearly above the obstacle hitbox.
             if (ballCy + ballR < hbY + 8) continue;
 
             if (circleRect(ballCx, ballCy, ballR, hbX, hbY, hbW, hbH)) {
@@ -348,7 +301,6 @@ export default function HeartBounceGame() {
           }
         }
 
-        // Checks collision with stars and adds score.
         for (const st of w.stars) {
           if (st.taken) continue;
 
@@ -367,7 +319,6 @@ export default function HeartBounceGame() {
           }
         }
 
-        // Recycles obstacles that go out of view.
         for (const ob of w.obstacles) {
           if (ob.x - w.scrollX < -620) {
             const farthestX = Math.max(...w.obstacles.map((item) => item.x));
@@ -380,7 +331,6 @@ export default function HeartBounceGame() {
           }
         }
 
-        // Recycles stars that were taken or moved out of view.
         for (const st of w.stars) {
           if (st.taken || st.x - w.scrollX < -420) {
             const farthest = Math.max(...w.stars.map((item) => item.x));
@@ -393,25 +343,19 @@ export default function HeartBounceGame() {
         }
       }
 
-      // Clears the canvas before drawing the next frame.
       ctx.clearRect(0, 0, W, H);
 
       const s = spritesRef.current;
 
-      // Draws the scrolling background.
       drawScrollingBg(ctx, s.bg, w.scrollX * 0.55);
-
-      // Draws the stars and their glow effect.
       drawStars(ctx, w.stars, w.scrollX, w.time, s.star);
 
-      // Draws all obstacles.
       for (const ob of w.obstacles) {
         const sx = ob.x - w.scrollX;
         const drawY = GROUND_Y - ob.h + ob.groundSink;
         ctx.drawImage(s.obstacle, sx, drawY, ob.w, ob.h);
       }
 
-      // Draws the rotating player.
       const p = w.player;
 
       ctx.save();
@@ -420,7 +364,6 @@ export default function HeartBounceGame() {
       ctx.drawImage(s.ball, -p.w / 2, -p.h / 2, p.w, p.h);
       ctx.restore();
 
-      // Draws the score and revive information.
       ctx.fillStyle = "rgba(0,0,0,0.55)";
       ctx.fillRect(18, 18, 360, 52);
 
@@ -429,7 +372,6 @@ export default function HeartBounceGame() {
       ctx.fillText(`Score: ${Math.floor(scoreRef.current)}`, 34, 50);
       ctx.fillText(`Revives: ${revivesLeft}`, 190, 50);
 
-      // Draws the game over overlay.
       if (status === "GAME_OVER") {
         ctx.fillStyle = "rgba(0,0,0,0.55)";
         ctx.fillRect(0, 0, W, H);
@@ -455,9 +397,8 @@ export default function HeartBounceGame() {
   return (
     <AuthLayout>
       <div className="w-full">
-        {/* Top bar above the game canvas */}
         <div className="mb-3 flex items-center justify-between px-1">
-          <div className="text-white/70 text-sm">
+          <div className="text-sm text-white/70">
             <b>Only The Fastest Survive</b>
           </div>
 
@@ -469,18 +410,16 @@ export default function HeartBounceGame() {
           </Link>
         </div>
 
-        {/* Main canvas where the game is drawn */}
         <canvas
           ref={canvasRef}
           className="block w-full border border-white/10 shadow-2xl"
           style={{ height: "auto", borderRadius: 18 }}
         />
 
-        {/* Revive popup shown after hitting an obstacle */}
         {status === "HEART" && puzzle && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/70">
-            <div className="bg-[#0b1027] p-6 rounded-2xl text-center">
-              <h2 className="text-white text-xl font-bold">
+            <div className="rounded-2xl bg-[#0b1027] p-6 text-center">
+              <h2 className="text-xl font-bold text-white">
                 Revive Challenge
               </h2>
 
@@ -489,12 +428,12 @@ export default function HeartBounceGame() {
               <input
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
-                className="mt-4 px-4 py-2 rounded"
+                className="mt-4 rounded px-4 py-2"
               />
 
               <button
                 onClick={handleHeartSubmit}
-                className="ml-3 bg-emerald-400 px-4 py-2 rounded"
+                className="ml-3 rounded bg-emerald-400 px-4 py-2"
               >
                 Submit
               </button>

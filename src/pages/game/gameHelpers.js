@@ -9,10 +9,10 @@ import {
 } from "./gameConstants";
 import { clamp } from "./collision";
 
-// Returns a random number between two values.
+// Random number between min and max
 export const randBetween = (a, b) => a + Math.random() * (b - a);
 
-// Creates one obstacle with random size.
+// Creates one obstacle using image ratio and random height
 export function createObstacle(x, img) {
   const ratio = img?.height ? img.width / img.height : 1.4;
   const h = Math.floor(randBetween(STONE_MIN_H, STONE_MAX_H));
@@ -20,7 +20,6 @@ export function createObstacle(x, img) {
   return { x, w, h, groundSink: 27 };
 }
 
-// Creates the full starting obstacle list.
 export function makeObstacles(img) {
   let x = 950;
   const arr = [];
@@ -33,7 +32,6 @@ export function makeObstacles(img) {
   return arr;
 }
 
-// Creates the full starting star list.
 export function makeStars() {
   let x = 850;
   const stars = [];

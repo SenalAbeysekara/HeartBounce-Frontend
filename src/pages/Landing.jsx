@@ -1,38 +1,21 @@
-// Imports React state hook for managing component state.
 import { useState } from "react";
-
-// Imports the shared layout component used for this page.
 import AuthLayout from "./AuthLayout";
-
-// Imports navigation hook from React Router.
 import { useNavigate } from "react-router-dom";
-
-// Imports the API helper used to make backend requests.
 import { api } from "../api/api";
 
-// Main landing page component.
 export default function Landing() {
-  // Used to move the user to another page.
   const navigate = useNavigate();
-
-  // Tracks whether the app is checking the user's login session.
   const [checking, setChecking] = useState(false);
 
-  // Runs when the user clicks the Play button.
-  // It checks if the user is already logged in.
   async function handlePlay() {
     setChecking(true);
-    try {
-      // Sends a request to check whether the current session is valid.
-      await api.get("/users/me");
 
-      // If the user is already logged in, go to the main menu.
+    try {
+      await api.get("/users/me");
       navigate("/mainmenu");
     } catch {
-      // If the session is not valid, send the user to the login page.
       navigate("/login");
     } finally {
-      // Stops the loading state after the check finishes.
       setChecking(false);
     }
   }
@@ -51,19 +34,15 @@ export default function Landing() {
             py-16
           "
         >
-          {/* Decorative gradient layer inside the card */}
+          {/* Card background effects */}
           <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-fuchsia-500/10 via-indigo-500/10 to-cyan-500/10" />
-
-          {/* Soft border highlight around the card */}
           <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-white/10" />
 
           <div className="relative flex flex-col items-center px-10">
-            {/* Main title shown on the landing page */}
             <h1 className="text-center text-8xl leading-none font-bold tracking-tight">
               HeartBounce
             </h1>
 
-            {/* Main action button that checks login status before starting */}
             <button
               onClick={handlePlay}
               disabled={checking}
@@ -77,16 +56,12 @@ export default function Landing() {
                 disabled:opacity-60
               "
             >
-              {/* Inner overlay for glossy button styling */}
               <span className="absolute inset-2 rounded-xl bg-white/10" />
-
-              {/* Button text changes while session check is in progress */}
               <span className="relative text-xl font-extrabold tracking-wide text-[#070a18]">
                 {checking ? "Checking..." : "PLAY"}
               </span>
             </button>
 
-            {/* Small feature labels shown below the Play button */}
             <div className="mt-12 flex flex-wrap items-center justify-center gap-8">
               <Pill tone="cyan" text="Race The Timer" />
               <Pill tone="purple" text="Solve Challenges" />
@@ -99,10 +74,8 @@ export default function Landing() {
   );
 }
 
-// Reusable pill-shaped label component.
-// It shows short feature text with different color styles.
+// Reusable feature pill
 function Pill({ text, tone }) {
-  // Chooses the style based on the tone prop.
   const toneClass =
     tone === "cyan"
       ? "border-cyan-300/25 text-cyan-100 shadow-lg"
@@ -121,7 +94,6 @@ function Pill({ text, tone }) {
         ${toneClass}
       `}
     >
-      {/* Displays the text inside the pill */}
       {text}
     </div>
   );
