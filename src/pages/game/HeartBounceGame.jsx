@@ -117,7 +117,7 @@ export default function HeartBounceGame() {
         { score: Number(finalScore) || 0, difficulty },
         { withCredentials: true }
       );
-    } catch {}
+    } catch { }
   }
 
   async function fetchHeart() {
@@ -399,7 +399,7 @@ export default function HeartBounceGame() {
       <div className="w-full">
         <div className="mb-3 flex items-center justify-between px-1">
           <div className="text-sm text-white/70">
-            <b>Only The Fastest Survive</b>
+            <b>Press Space to Jump over Obstacles</b>
           </div>
 
           <Link
@@ -422,13 +422,15 @@ export default function HeartBounceGame() {
               <h2 className="text-xl font-bold text-white">
                 Revive Challenge
               </h2>
-
+              {/* Added tip for the puzzle */}
+              <p className="text-white mt-4">Tip: Count the hearts to solve the puzzle!</p>
               <img src={puzzle.question} className="mx-auto mt-4" />
 
               <input
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
                 className="mt-4 rounded px-4 py-2"
+                autoFocus // Ensures the input box is focused automatically
               />
 
               <button

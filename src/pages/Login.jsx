@@ -65,15 +65,6 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
               />
 
-              <div className="flex items-center justify-end">
-                <Link
-                  to="/forgot"
-                  className="text-sm text-white/70 hover:text-white transition"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-
               <GradientButton text="LOGIN" />
             </form>
 

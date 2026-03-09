@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import MainMenu from "./pages/MainMenu";
 import HeartBounceGame from "./pages/game/HeartBounceGame";
 import GameModeSelect from "./pages/GameModeSelect";
@@ -17,7 +17,7 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/forgot" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/mainmenu" element={<MainMenu />} />
         <Route path="/game" element={<GameModeSelect />} />
         <Route path="/heart-bounce" element={<HeartBounceGame />} />

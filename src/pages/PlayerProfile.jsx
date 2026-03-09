@@ -113,9 +113,7 @@ export default function PlayerProfile() {
           </Link>
         </div>
 
-        {err && <p className="mt-4 text-sm text-red-400">{err}</p>}
-        {msg && <p className="mt-4 text-sm text-emerald-300">{msg}</p>}
-
+        {/* Profile Section */}
         <div className="mt-8 flex flex-col items-center gap-6 rounded-2xl border border-white/10 bg-[#0b1027]/60 p-6 sm:flex-row">
           <img src={user.image} alt="" className="h-24 w-24 rounded-full object-cover" />
 
@@ -126,18 +124,26 @@ export default function PlayerProfile() {
                   <div className="text-xl font-bold text-white">{user.userName}</div>
                   <div className="text-sm text-white/60">{user.email}</div>
                 </div>
-
-                <button
-                  onClick={() => {
-                    setEditing(true);
-                    setNewName(user.userName || "");
-                    setErr("");
-                    setMsg("");
-                  }}
-                  className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
-                >
-                  Edit Username
-                </button>
+                <div className="flex gap-4 flex-col sm:flex-row">
+                  <button
+                    onClick={() => {
+                      setEditing(true);
+                      setNewName(user.userName || "");
+                      setErr("");
+                      setMsg("");
+                    }}
+                    className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
+                  >
+                    Edit Username
+                  </button>
+                  {/* Reset Password Button */}
+                  <Link
+                    to="/reset-password"
+                    className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15 mt-2 sm:mt-0"
+                  >
+                    Reset Password
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="space-y-3">
@@ -153,9 +159,7 @@ export default function PlayerProfile() {
                   <button
                     disabled={saving}
                     onClick={saveUsername}
-                    className={`rounded-xl bg-linear-to-br from-fuchsia-500 via-indigo-500 to-cyan-400 px-5 py-2 text-sm font-extrabold text-[#070a18] transition hover:brightness-110 ${
-                      saving ? "cursor-not-allowed opacity-60" : ""
-                    }`}
+                    className={`rounded-xl bg-linear-to-br from-fuchsia-500 via-indigo-500 to-cyan-400 px-5 py-2 text-sm font-extrabold text-[#070a18] transition hover:brightness-110 ${saving ? "cursor-not-allowed opacity-60" : ""}`}
                   >
                     {saving ? "Saving..." : "Save"}
                   </button>
