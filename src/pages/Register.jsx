@@ -10,13 +10,20 @@ export default function Register() {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
       await api.post("/users/register", { email, userName, password });
-      navigate("/login");
+
+      setSuccessMessage("Registration successful! Redirecting...");
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (error) {
       setErrorMessage(error?.response?.data?.message || "Registration failed");
     }
@@ -41,6 +48,10 @@ export default function Register() {
 
             {errorMessage && (
               <p className="mt-2 text-center text-red-500">{errorMessage}</p>
+            )}
+
+            {successMessage && (
+              <p className="mt-2 text-center text-green-500">{successMessage}</p>
             )}
 
             <form onSubmit={handleSubmit} className="mt-10 space-y-5">
@@ -84,7 +95,6 @@ export default function Register() {
   );
 }
 
-// Reusable form input
 function Input({ label, type, value, onChange }) {
   return (
     <div>
@@ -108,7 +118,6 @@ function Input({ label, type, value, onChange }) {
   );
 }
 
-// Reusable gradient submit button
 function GradientButton({ text }) {
   return (
     <button

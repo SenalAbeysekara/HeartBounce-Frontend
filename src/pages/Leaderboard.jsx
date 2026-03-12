@@ -1,23 +1,44 @@
 import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
-import { Link } from "react-router-dom";
 import { api } from "../api/api";
 
 export default function Leaderboard() {
-  const [top, setTop] = useState([]);
-  const [err, setErr] = useState("");
+  const navigate = useNavigate(); 
+  const [top, setTop] = useState([]); 
+  const [err, setErr] = useState(""); 
+  const [isLoggedIn, setIsLoggedIn] = useState(null); 
 
   useEffect(() => {
-    (async () => {
+    async function checkLogin() {
       try {
-        // Loads leaderboard data from run routes
-        const res = await api.get("/run/leaderboard");
-        setTop(res.data.top || []);
+        await api.get("/users/me");  
+        setIsLoggedIn(true); 
       } catch {
-        setErr("Failed to load leaderboard");
+        setIsLoggedIn(false); 
+        navigate("/login"); 
       }
-    })();
-  }, []);
+    }
+
+    checkLogin();  
+  }, [navigate]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      (async () => {
+        try {
+          const res = await api.get("/run/leaderboard");
+          setTop(res.data.top || []); 
+        } catch {
+          setErr("Failed to load leaderboard");
+        }
+      })();
+    }
+  }, [isLoggedIn]); 
+
+  if (isLoggedIn === null) {
+    return <div>Loading...</div>; 
+  }
 
   return (
     <AuthLayout>

@@ -8,20 +8,23 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [rememberMe, setRememberMe] = useState(false); 
+  const [errorMessage, setErrorMessage] = useState(""); 
+  const [successMessage, setSuccessMessage] = useState(""); 
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setErrorMessage("");
+    setErrorMessage("");  
+    setSuccessMessage(""); 
 
     try {
-      await api.post(
-        "/users/login",
-        { email, password },
-        { withCredentials: true }
-      );
+      await api.post("/users/login", { email, password, rememberMe });
 
-      navigate("/mainmenu");
+      setSuccessMessage("Login successful! Redirecting...");
+      setTimeout(() => {
+        navigate("/mainmenu");
+      }, 2000); 
+
     } catch (err) {
       setErrorMessage(err?.response?.data?.message || "Failed to login");
     }
@@ -44,6 +47,12 @@ export default function Login() {
               Log In To The Arena.
             </p>
 
+            {successMessage && (
+              <p className="mt-4 text-center text-sm text-green-400">
+                {successMessage}
+              </p>
+            )}
+
             {errorMessage && (
               <p className="mt-4 text-center text-sm text-red-400">
                 {errorMessage}
@@ -65,6 +74,16 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
               />
 
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)} 
+                  className="mr-2"
+                />
+                <label className="text-white/70">Remember me</label>
+              </div>
+
               <GradientButton text="LOGIN" />
             </form>
 
@@ -84,7 +103,6 @@ export default function Login() {
   );
 }
 
-// Reusable form input
 function Input({ label, type, value, onChange }) {
   return (
     <div>
@@ -96,30 +114,17 @@ function Input({ label, type, value, onChange }) {
         value={value}
         onChange={onChange}
         required
-        className="
-          w-full rounded-2xl border border-white/10
-          bg-[#0b1027]/60 px-5 py-4
-          text-white placeholder:text-white/40
-          outline-none
-          focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10
-          transition
-        "
+        className="w-full rounded-2xl border border-white/10 bg-[#0b1027]/60 px-5 py-4 text-white placeholder:text-white/40 outline-none focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10 transition"
       />
     </div>
   );
 }
 
-// Reusable gradient submit button
 function GradientButton({ text }) {
   return (
     <button
       type="submit"
-      className="
-        relative mt-3 w-full rounded-2xl py-4
-        bg-linear-to-br from-fuchsia-500 via-indigo-500 to-cyan-400
-        shadow-xl
-        hover:brightness-110 active:scale-[0.99] transition
-      "
+      className="relative mt-3 w-full rounded-2xl py-4 bg-linear-to-br from-fuchsia-500 via-indigo-500 to-cyan-400 shadow-xl hover:brightness-110 active:scale-[0.99] transition"
     >
       <span className="absolute inset-2 rounded-xl bg-white/10" />
       <span className="relative text-base font-extrabold tracking-wide text-[#070a18]">

@@ -1,6 +1,5 @@
 import { W, H } from "./gameConstants";
 
-// Loads an image and resolves once it is ready
 export function loadImage(src) {
   return new Promise((res, rej) => {
     const img = new Image();

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
 import AuthLayout from "../AuthLayout";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -19,6 +18,7 @@ import {
 import { clamp, circleRect } from "./collision";
 import { loadImage, drawScrollingBg, drawStars } from "./drawHelpers";
 import { randBetween, makeObstacles, makeStars } from "./gameHelpers";
+import { api } from "../../api/api";
 
 export default function HeartBounceGame() {
   const location = useLocation();
@@ -72,7 +72,6 @@ export default function HeartBounceGame() {
     scoreRef.current = score;
   }, [score]);
 
-  // Resets the whole run state
   function resetGame() {
     setStatus("PLAY");
     setScore(0);
@@ -106,26 +105,18 @@ export default function HeartBounceGame() {
     lastTRef.current = performance.now();
   }
 
-  // Saves the finished run only once
   async function saveRun(finalScore) {
     if (savedRef.current) return;
     savedRef.current = true;
 
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/run/runs`,
-        { score: Number(finalScore) || 0, difficulty },
-        { withCredentials: true }
-      );
+      await api.post("/run/runs", { score: Number(finalScore) || 0, difficulty });
     } catch { }
   }
 
   async function fetchHeart() {
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/run/heart/new`,
-        { withCredentials: true }
-      );
+      const res = await api.get("/run/heart/new");
 
       setPuzzle(res.data);
       setAnswer("");
@@ -152,7 +143,6 @@ export default function HeartBounceGame() {
     hitObstacleIndexRef.current = null;
   }
 
-  // Checks revive puzzle answer
   function handleHeartSubmit() {
     if (!puzzle) return;
 
@@ -172,7 +162,6 @@ export default function HeartBounceGame() {
     if (left <= 0) endGame();
   }
 
-  // Loads game images for the selected theme
   useEffect(() => {
     let dead = false;
     setLoaded(false);
@@ -197,7 +186,6 @@ export default function HeartBounceGame() {
     };
   }, [theme.bg, theme.obstacle]);
 
-  // Keyboard controls for jump and restart
   useEffect(() => {
     const down = (e) => {
       if (e.code === "Space" || e.key === "ArrowUp") {
@@ -226,7 +214,6 @@ export default function HeartBounceGame() {
     };
   }, [status]);
 
-  // Main game loop
   useEffect(() => {
     if (!loaded || !spritesRef.current) return;
 

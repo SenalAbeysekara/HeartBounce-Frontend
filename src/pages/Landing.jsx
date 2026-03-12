@@ -63,7 +63,7 @@ export default function Landing() {
             </button>
 
             <div className="mt-12 flex flex-wrap items-center justify-center gap-8">
-              <Pill tone="cyan" text="Race The Timer" />
+              <Pill tone="purple" text="Race The Timer" />
               <Pill tone="purple" text="Solve Challenges" />
               <Pill tone="purple" text="Climb Leaderboard" />
             </div>
@@ -74,7 +74,6 @@ export default function Landing() {
   );
 }
 
-// Reusable feature pill
 function Pill({ text, tone }) {
   const toneClass =
     tone === "cyan"

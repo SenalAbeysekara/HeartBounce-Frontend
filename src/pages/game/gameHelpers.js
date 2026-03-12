@@ -9,10 +9,8 @@ import {
 } from "./gameConstants";
 import { clamp } from "./collision";
 
-// Random number between min and max
 export const randBetween = (a, b) => a + Math.random() * (b - a);
 
-// Creates one obstacle using image ratio and random height
 export function createObstacle(x, img) {
   const ratio = img?.height ? img.width / img.height : 1.4;
   const h = Math.floor(randBetween(STONE_MIN_H, STONE_MAX_H));

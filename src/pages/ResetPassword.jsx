@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AuthLayout from "./AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/api";
@@ -12,6 +12,25 @@ export default function ForgotPassword() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(null); 
+
+  useEffect(() => {
+    async function checkLogin() {
+      try {
+        await api.get("/users/me");  
+        setIsLoggedIn(true); 
+      } catch {
+        setIsLoggedIn(false);  
+        navigate("/login");  
+      }
+    }
+
+    checkLogin();  
+  }, [navigate]);
+
+  if (isLoggedIn === null) {
+    return <div>Loading...</div>; 
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -91,7 +110,6 @@ export default function ForgotPassword() {
   );
 }
 
-// Reusable form input
 function Input({ label, type, value, onChange }) {
   return (
     <div>
@@ -116,7 +134,6 @@ function Input({ label, type, value, onChange }) {
   );
 }
 
-// Reusable gradient submit button
 function GradientButton({ text, disabled }) {
   return (
     <button

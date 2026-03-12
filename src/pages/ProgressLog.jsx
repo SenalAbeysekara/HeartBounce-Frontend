@@ -13,7 +13,6 @@ export default function ProgressLog() {
       try {
         await api.get("/users/me");
 
-        // Load saved runs from run routes
         const res = await api.get("/run/runs/me");
         setRuns(res.data.runs || []);
       } catch {

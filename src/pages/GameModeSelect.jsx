@@ -1,7 +1,8 @@
-import AuthLayout from "./AuthLayout";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import AuthLayout from "./AuthLayout";
+import { api } from "../api/api";
 
-// Available difficulty modes
 const MODES = [
   {
     key: "easy",
@@ -31,6 +32,25 @@ const MODES = [
 
 export default function GameModeSelect() {
   const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(null); 
+
+  useEffect(() => {
+    async function checkLogin() {
+      try {
+        await api.get("/users/me");  
+        setIsLoggedIn(true);  
+      } catch {
+        setIsLoggedIn(false); 
+        navigate("/login");  
+      }
+    }
+
+    checkLogin();  
+  }, [navigate]);
+
+  if (isLoggedIn === null) {
+    return <div>Loading...</div>; 
+  }
 
   const pick = (m) => {
     navigate("/heart-bounce", {

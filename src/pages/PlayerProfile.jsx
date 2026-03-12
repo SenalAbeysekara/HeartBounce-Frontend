@@ -22,7 +22,6 @@ export default function PlayerProfile() {
         setUser(meRes.data.user);
         setNewName(meRes.data.user.userName || "");
 
-        // Load user runs and profile stats from run routes
         const runsRes = await api.get("/run/runs/me");
         const myRuns = runsRes.data.runs || [];
         setRuns(myRuns);
@@ -41,7 +40,6 @@ export default function PlayerProfile() {
 
   const totalRuns = runs.length;
 
-  // Fallback stats calculated from fetched runs
   const computedStats = useMemo(() => {
     const base = {
       easy: { runs: 0, bestScore: 0 },
@@ -136,7 +134,6 @@ export default function PlayerProfile() {
                   >
                     Edit Username
                   </button>
-                  {/* Reset Password Button */}
                   <Link
                     to="/reset-password"
                     className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15 mt-2 sm:mt-0"
@@ -196,7 +193,6 @@ export default function PlayerProfile() {
   );
 }
 
-// Reusable summary card
 function StatCard({ label, value }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-[#0b1027]/60 p-6 text-center">
@@ -206,7 +202,6 @@ function StatCard({ label, value }) {
   );
 }
 
-// Reusable difficulty stats card
 function DiffCard({ title, data }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-[#0b1027]/60 p-6">

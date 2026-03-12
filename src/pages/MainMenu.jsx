@@ -15,7 +15,6 @@ export default function MainMenu() {
         const res = await api.get("/users/me");
         setUser(res.data.user);
       } catch {
-        // Redirect unauthenticated users to login
         navigate("/login");
       }
     }
@@ -27,7 +26,6 @@ export default function MainMenu() {
     try {
       await api.post("/users/logout", {});
     } finally {
-      // Always return to login after logout attempt
       navigate("/login");
     }
   }
@@ -121,7 +119,6 @@ export default function MainMenu() {
   );
 }
 
-// Reusable navigation button for main menu actions
 function MenuButton({ text, description, to }) {
   return (
     <Link
