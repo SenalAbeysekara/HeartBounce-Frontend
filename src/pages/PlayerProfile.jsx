@@ -138,7 +138,7 @@ export default function PlayerProfile() {
                     to="/reset-password"
                     className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15 mt-2 sm:mt-0"
                   >
-                    Reset Password
+                    Change Password
                   </Link>
                 </div>
               </div>

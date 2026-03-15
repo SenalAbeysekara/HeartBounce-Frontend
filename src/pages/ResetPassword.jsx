@@ -64,7 +64,7 @@ export default function ForgotPassword() {
 
           <div className="relative">
             <h1 className="text-center text-4xl font-extrabold tracking-tight">
-              Reset password
+              Change Password
             </h1>
 
             <p className="mt-2 text-center text-sm text-white/60">
