@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AuthLayout from "./AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
+import { FaGamepad, FaStar } from "react-icons/fa";
 import { api } from "../api/api";
 
 export default function PlayerProfile() {
@@ -111,15 +112,20 @@ export default function PlayerProfile() {
           </Link>
         </div>
 
-        {/* Profile Section */}
         <div className="mt-8 flex flex-col items-center gap-6 rounded-2xl border border-white/10 bg-[#0b1027]/60 p-6 sm:flex-row">
-          <img src={user.image} alt="" className="h-24 w-24 rounded-full object-cover" />
+          <img
+            src={user.image}
+            alt=""
+            className="h-24 w-24 rounded-full object-cover"
+          />
 
           <div className="w-full">
             {!editing ? (
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div className="text-xl font-bold text-white">{user.userName}</div>
+                  <div className="text-xl font-bold text-white">
+                    {user.userName}
+                  </div>
                   <div className="text-sm text-white/60">{user.email}</div>
                 </div>
                 <div className="flex gap-4 flex-col sm:flex-row">
@@ -144,7 +150,9 @@ export default function PlayerProfile() {
               </div>
             ) : (
               <div className="space-y-3">
-                <label className="block text-sm text-white/70">New Username</label>
+                <label className="block text-sm text-white/70">
+                  New Username
+                </label>
 
                 <input
                   value={newName}
@@ -156,7 +164,9 @@ export default function PlayerProfile() {
                   <button
                     disabled={saving}
                     onClick={saveUsername}
-                    className={`rounded-xl bg-linear-to-br from-fuchsia-500 via-indigo-500 to-cyan-400 px-5 py-2 text-sm font-extrabold text-[#070a18] transition hover:brightness-110 ${saving ? "cursor-not-allowed opacity-60" : ""}`}
+                    className={`rounded-xl bg-linear-to-br from-fuchsia-500 via-indigo-500 to-cyan-400 px-5 py-2 text-sm font-extrabold text-[#070a18] transition hover:brightness-110 ${
+                      saving ? "cursor-not-allowed opacity-60" : ""
+                    }`}
                   >
                     {saving ? "Saving..." : "Save"}
                   </button>
@@ -175,8 +185,20 @@ export default function PlayerProfile() {
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <StatCard label="Total Runs" value={totalRuns} />
-          <StatCard label="Total Score" value={totalScore} />
+          <StatCard
+            label="Total Runs"
+            value={totalRuns}
+            icon={<FaGamepad />}
+            accent="from-cyan-400 to-indigo-400"
+            iconStyle="text-cyan-200 bg-cyan-400/10"
+          />
+          <StatCard
+            label="Total Score"
+            value={totalScore}
+            icon={<FaStar />}
+            accent="from-fuchsia-400 to-pink-400"
+            iconStyle="text-fuchsia-200 bg-fuchsia-400/10"
+          />
         </div>
 
         <div className="mt-10">
@@ -193,11 +215,21 @@ export default function PlayerProfile() {
   );
 }
 
-function StatCard({ label, value }) {
+function StatCard({ label, value, icon, accent, iconStyle }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#0b1027]/60 p-6 text-center">
-      <div className="text-sm text-white/60">{label}</div>
-      <div className="mt-2 text-2xl font-extrabold text-white">{value}</div>
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0b1027]/60 p-6 text-center">
+      <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${accent}`} />
+
+      <div className="flex justify-center">
+        <div className={`rounded-2xl p-3 text-lg ${iconStyle}`}>{icon}</div>
+      </div>
+
+      <div className="mt-4 text-sm uppercase tracking-[0.16em] text-white/55">
+        {label}
+      </div>
+      <div className="mt-2 text-4xl font-extrabold tracking-tight text-white">
+        {value}
+      </div>
     </div>
   );
 }

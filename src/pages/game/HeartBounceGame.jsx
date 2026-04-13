@@ -417,7 +417,7 @@ export default function HeartBounceGame() {
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
                 className="mt-4 rounded px-4 py-2"
-                autoFocus // Ensures the input box is focused automatically
+                autoFocus 
               />
 
               <button

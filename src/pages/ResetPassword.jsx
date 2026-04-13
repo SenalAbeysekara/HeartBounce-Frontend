@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import AuthLayout from "./AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
+import { FaEnvelope, FaLock } from "react-icons/fa";
 import { api } from "../api/api";
 
 export default function ForgotPassword() {
@@ -12,24 +13,24 @@ export default function ForgotPassword() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(null); 
+  const [isLoggedIn, setIsLoggedIn] = useState(null);
 
   useEffect(() => {
     async function checkLogin() {
       try {
-        await api.get("/users/me");  
-        setIsLoggedIn(true); 
+        await api.get("/users/me");
+        setIsLoggedIn(true);
       } catch {
-        setIsLoggedIn(false);  
-        navigate("/login");  
+        setIsLoggedIn(false);
+        navigate("/login");
       }
     }
 
-    checkLogin();  
+    checkLogin();
   }, [navigate]);
 
   if (isLoggedIn === null) {
-    return <div>Loading...</div>; 
+    return <div>Loading...</div>;
   }
 
   async function handleSubmit(e) {
@@ -58,12 +59,11 @@ export default function ForgotPassword() {
     <AuthLayout>
       <div className="w-full max-w-lg">
         <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/10 p-10 backdrop-blur-2xl shadow-2xl">
-          {/* Card background effects */}
           <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-fuchsia-500/10 via-indigo-500/10 to-cyan-500/10" />
           <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-white/10" />
 
           <div className="relative">
-            <h1 className="text-center text-4xl font-extrabold tracking-tight">
+            <h1 className="text-center text-4xl font-extrabold tracking-tight text-white">
               Change Password
             </h1>
 
@@ -75,18 +75,26 @@ export default function ForgotPassword() {
             {msg && <p className="mt-4 text-center text-sm text-emerald-300">{msg}</p>}
 
             <form onSubmit={handleSubmit} className="mt-10 space-y-5">
-              <Input label="Email" type="email" value={email} onChange={setEmail} />
+              <Input
+                label="Email"
+                type="email"
+                value={email}
+                onChange={setEmail}
+                icon={<FaEnvelope />}
+              />
               <Input
                 label="Current Password"
                 type="password"
                 value={currentPassword}
                 onChange={setCurrentPassword}
+                icon={<FaLock />}
               />
               <Input
                 label="New Password"
                 type="password"
                 value={newPassword}
                 onChange={setNewPassword}
+                icon={<FaLock />}
               />
 
               <GradientButton
@@ -98,7 +106,7 @@ export default function ForgotPassword() {
             <div className="mt-8 text-center">
               <Link
                 to="/login"
-                className="inline-block text-sm font-semibold text-cyan-200 hover:text-white transition"
+                className="inline-block text-sm font-semibold text-cyan-200 transition hover:text-white"
               >
                 Back to Login
               </Link>
@@ -110,26 +118,25 @@ export default function ForgotPassword() {
   );
 }
 
-function Input({ label, type, value, onChange }) {
+function Input({ label, type, value, onChange, icon }) {
   return (
     <div>
       <label className="mb-2 block text-sm text-white/70">{label}</label>
 
-      <input
-        type={type}
-        placeholder={label}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required
-        className="
-          w-full rounded-2xl border border-white/10
-          bg-[#0b1027]/60 px-5 py-4
-          text-white placeholder:text-white/40
-          outline-none
-          focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10
-          transition
-        "
-      />
+      <div className="relative">
+        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/45">
+          {icon}
+        </span>
+
+        <input
+          type={type}
+          placeholder={label}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          required
+          className="w-full rounded-2xl border border-white/10 bg-[#0b1027]/60 py-4 pl-12 pr-5 text-white placeholder:text-white/40 outline-none transition focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
+        />
+      </div>
     </div>
   );
 }
@@ -139,13 +146,9 @@ function GradientButton({ text, disabled }) {
     <button
       type="submit"
       disabled={disabled}
-      className={`
-        relative mt-3 w-full rounded-2xl py-4
-        bg-linear-to-br from-fuchsia-500 via-indigo-500 to-cyan-400
-        shadow-xl
-        hover:brightness-110 active:scale-[0.99] transition
-        ${disabled ? "opacity-60 cursor-not-allowed" : ""}
-      `}
+      className={`relative mt-3 w-full rounded-2xl bg-linear-to-br from-fuchsia-500 via-indigo-500 to-cyan-400 py-4 shadow-xl transition hover:brightness-110 active:scale-[0.99] ${
+        disabled ? "cursor-not-allowed opacity-60" : ""
+      }`}
     >
       <span className="absolute inset-2 rounded-xl bg-white/10" />
       <span className="relative text-base font-extrabold tracking-wide text-[#070a18]">
